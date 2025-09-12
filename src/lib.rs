@@ -24,11 +24,39 @@ const RCON: [[u8; 4]; 10] = [
     [0x36, 00, 00, 00]
 ];
 
-fn key_expansion(key: &[[u8; WORD_SIZE]; NUM_KEY_WORDS]) -> [[u8; WORD_SIZE]; 4 * (NUM_ROUNDS + 1)] {
-    let mut w: [[u8; 4]; 4 * (NUM_ROUNDS + 1)] = [[0; 4]; 4 * (NUM_ROUNDS + 1)];
+fn xor_word(w1: &[u8; WORD_SIZE], w2: &[u8; WORD_SIZE]) -> [u8; WORD_SIZE] {
+    let mut result: [u8; WORD_SIZE] = [0u8; WORD_SIZE];
 
-    for i in 0..NUM_KEY_WORDS - 1 {
-        w[i] = key[i];
+    for i in 0..WORD_SIZE {
+        result[i] = w1[i] ^ w2[i];
+    }
+
+    result
+}
+
+fn sub_word(w: &[u8; WORD_SIZE]) -> &[u8; WORD_SIZE] {
+    todo!()
+}
+
+fn rot_word(w: &[u8; WORD_SIZE]) -> &[u8; WORD_SIZE] {
+    todo!()
+}
+
+fn key_expansion(key: &[[u8; WORD_SIZE]; NUM_KEY_WORDS]) -> [[u8; WORD_SIZE]; 4 * (NUM_ROUNDS + 1) - 1] {
+    let mut w: [[u8; 4]; 4 * (NUM_ROUNDS + 1) - 1] = [[0; 4]; 4 * (NUM_ROUNDS + 1) - 1];
+    let mut i: usize = 0;
+
+    while i <= NUM_KEY_WORDS - 1 {
+        w[i] = key[i * 4]; // is this right?
+        i += 1;
+    }
+
+    while i <= 4 * NUM_ROUNDS + 3 {
+        let mut temp: [u8; WORD_SIZE] = w[i];
+
+        if i % NUM_KEY_WORDS == 0 {
+            temp = xor_word(&sub_word(rot_word(&temp)),&RCON[i/NUM_KEY_WORDS]);
+        }
     }
 
     w
