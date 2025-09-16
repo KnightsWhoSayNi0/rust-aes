@@ -34,15 +34,17 @@ fn xor_word(w1: &[u8; WORD_SIZE], w2: &[u8; WORD_SIZE]) -> [u8; WORD_SIZE] {
     result
 }
 
-fn sub_word(w: &[u8; WORD_SIZE]) -> &[u8; WORD_SIZE] {
+fn sub_word(w: &[u8; WORD_SIZE]) -> [u8; WORD_SIZE] {
     todo!()
 }
 
-fn rot_word(w: &[u8; WORD_SIZE]) -> &[u8; WORD_SIZE] {
-    todo!()
+fn rot_word(w: &[u8; WORD_SIZE]) -> [u8; WORD_SIZE] {
+    [w[1], w[2], w[3], w[0]]
 }
 
-fn key_expansion(key: &[[u8; WORD_SIZE]; NUM_KEY_WORDS]) -> [[u8; WORD_SIZE]; 4 * (NUM_ROUNDS + 1) - 1] {
+fn key_expansion(
+    key: &[[u8; WORD_SIZE]; NUM_KEY_WORDS]
+) -> [[u8; WORD_SIZE]; 4 * (NUM_ROUNDS + 1) - 1] {
     let mut w: [[u8; 4]; 4 * (NUM_ROUNDS + 1) - 1] = [[0; 4]; 4 * (NUM_ROUNDS + 1) - 1];
     let mut i: usize = 0;
 
@@ -55,8 +57,13 @@ fn key_expansion(key: &[[u8; WORD_SIZE]; NUM_KEY_WORDS]) -> [[u8; WORD_SIZE]; 4 
         let mut temp: [u8; WORD_SIZE] = w[i];
 
         if i % NUM_KEY_WORDS == 0 {
-            temp = xor_word(&sub_word(rot_word(&temp)),&RCON[i/NUM_KEY_WORDS]);
+            temp = xor_word(&sub_word(&rot_word(&temp)),&RCON[i/NUM_KEY_WORDS]);
+        } else if NUM_KEY_WORDS > 6 && i % NUM_KEY_WORDS == 4 {
+            temp = sub_word(&temp);
         }
+
+        w[i] = xor_word(&w[i - NUM_KEY_WORDS], &temp);
+        i += 1;
     }
 
     w
@@ -102,7 +109,24 @@ fn cipher_128(input: &[u8; 16], w: [[u8; 4]; 4]) -> [u8; 16] {
 
 #[cfg(test)]
 mod tests {
-    use crate::cipher_128;
+    use crate::*;
+
+    #[test]
+    fn xor_word_test() {
+        let w1 = [0x0a, 0xc7, 0xe2, 0xd6];
+        let w2 = [0x99, 0x70, 0x7c, 0x88];
+        let expected = [0x93, 0xb7, 0x9e, 0x5e];
+
+        assert_eq!(xor_word(&w1, &w2), expected);
+    }
+
+    #[test]
+    fn rot_word_test() {
+        let w = [0xaa, 0xbb, 0xcc, 0xdd];
+        let expected = [0xbb, 0xcc, 0xdd, 0xaa];
+
+        assert_eq!(rot_word(&w), expected);
+    }
 
     #[test]
     fn cipher_test() {
