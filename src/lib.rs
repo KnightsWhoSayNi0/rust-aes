@@ -94,6 +94,18 @@ fn add_round_key(state: &[u8; 16], w: [u8; 4]) {
 
 }
 
+fn sub_bytes(state: &[[u8; 4]; 4]) {
+    todo!()
+}
+
+fn shift_rows(state: &[[u8; 4]; 4]) {
+    todo!()
+}
+
+fn mix_columns(state: &[[u8; 4]; 4]) {
+    todo!()
+}
+
 fn cipher_128(input: &[u8; 16], w: [[u8; 4]; 4]) -> [u8; 16] {
     // put input into the state
     let mut state = [[0u8; 4]; 4];
@@ -107,14 +119,14 @@ fn cipher_128(input: &[u8; 16], w: [[u8; 4]; 4]) -> [u8; 16] {
     // add round key
 
     for round in 0..10 {
-        // sub bytes
-        // shift rows
-        // mix columns
+        sub_bytes(&state);
+        shift_rows(&state);
+        mix_columns(&state);
         // add round key
     }
 
-    // sub bytes
-    // shift rows
+    sub_bytes(&state);
+    shift_rows(&state);
     // add round key
 
     let mut out: [u8; 16] = [0; 16];
